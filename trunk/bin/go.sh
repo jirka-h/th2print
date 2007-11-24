@@ -3,6 +3,7 @@
 # Usage 
 # go.sh http://www.tomshardware.com/2007/11/19/the_spider_weaves_its_web
 # SVN
+# BLLL
 
 # Colors {{{1
 function echo_red() {
