@@ -79,11 +79,11 @@ echo_red "Conversion is done!"
 #}}}
 
 # Creating TOC {{{1
-echo_red "Trying to call ${BASE_DIR}/${BIN_DIR}/toc.pl ${OUTPUT_NAME}"
+echo_red "Trying to call ${BASE_DIR}/${BIN_DIR}/html_create_toc.pl ${OUTPUT_NAME}"
 
-if ! ${BASE_DIR}/${BIN_DIR}/toc.pl ${OUTPUT_NAME}
+if ! ${BASE_DIR}/${BIN_DIR}/html_create_toc.pl ${OUTPUT_NAME}
 then
-  echo_red "Error calling ${BASE_DIR}/${BIN_DIR}/toc.pl ${OUTPUT_NAME}"
+  echo_red "Error calling ${BASE_DIR}/${BIN_DIR}/html_create_toc.pl ${OUTPUT_NAME}"
   exit 1
 fi
 
