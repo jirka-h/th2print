@@ -26,7 +26,7 @@ WGET_EXPERIMENTAL=-"r -l1 --follow-tags=img"
 WGET_OPTIONS="$WGET_STANDARD $WGET_EXPERIMENTAL"
 
 #WGET_BASE_URL="http://www.tomshardware.com/2007/11/19/the_spider_weaves_its_web"
-WGET_BASE_URL=`echo $1 | perl -ne 'if (m%(.*)/$%) { print $1;}'`
+WGET_BASE_URL=`echo $1 | perl -ne 's%/$%%g; print;'`
 echo_red "URL is $WGET_BASE_URL"
 #}}}
 
@@ -57,21 +57,22 @@ WGET_NAME=`echo $WGET_BASE_URL | perl -ne "if (m%.*/%) { print $';}"`
 BASE_OUTPUT_NAME="${WGET_NAME}-${DATE}"
 BASE_OUTPUT_SUFFIX=".html"
 OUTPUT_NAME="${BASE_OUTPUT_NAME}${BASE_OUTPUT_SUFFIX}"
-DIRNAME=`echo $WGET_BASE_URL | perl -ne "if (m%http://%) { print $';}"`
-BIN_DIR=`dirname $0`
-BASE_DIR=`pwd`
+DIRNAME=`echo $WGET_BASE_URL | perl -ne "if (m%http://%) { print \$';}"`
+BIN_NAME=`perl -e "use Cwd 'abs_path'; print abs_path(\"$0\");"`
+BIN_DIR=`dirname $BIN_NAME`
+
 echo_red "Trying to cd $DIRNAME"
 cd $DIRNAME
 FILES=`ls page*html | sort -k 2 -n -t e`
 FILES="index.html $FILES"
 echo_red $FILES
 
-echo_red "Trying to call ${BASE_DIR}/${BIN_DIR}/make_one_html.pl"
+echo_red "Trying to call ${BIN_DIR}/make_one_html.pl"
 echo_red "Output will be written into `pwd`/${OUTPUT_NAME}"
 
-if ! ${BASE_DIR}/${BIN_DIR}/make_one_html.pl $FILES > ${OUTPUT_NAME}
+if ! ${BIN_DIR}/make_one_html.pl $FILES > ${OUTPUT_NAME}
 then
-  echo_red "Error calling ${BASE_DIR}/${BIN_DIR}/make_one_html.pl $FILES > ${OUTPUT_NAME}"
+  echo_red "Error calling ${BIN_DIR}/make_one_html.pl $FILES > ${OUTPUT_NAME}"
   exit 1
 fi
 
@@ -79,11 +80,11 @@ echo_red "Conversion is done!"
 #}}}
 
 # Creating TOC {{{1
-echo_red "Trying to call ${BASE_DIR}/${BIN_DIR}/html_create_toc.pl ${OUTPUT_NAME}"
+echo_red "Trying to call ${BIN_DIR}/html_create_toc.pl ${OUTPUT_NAME}"
 
-if ! ${BASE_DIR}/${BIN_DIR}/html_create_toc.pl ${OUTPUT_NAME}
+if ! ${BIN_DIR}/html_create_toc.pl ${OUTPUT_NAME}
 then
-  echo_red "Error calling ${BASE_DIR}/${BIN_DIR}/html_create_toc.pl ${OUTPUT_NAME}"
+  echo_red "Error calling ${BIN_DIR}/html_create_toc.pl ${OUTPUT_NAME}"
   exit 1
 fi
 
