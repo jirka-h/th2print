@@ -1,13 +1,12 @@
-#summary One-sentence summary of this page.
+#Howto for th2print
 
-= Introduction =
+=How to use the scripts?=
 
-Add your content here.
+==What do you need?==
+I have developed the scripts on Linux. However, any system should work if you have these tools:
+*  /bin/sh (Shell)
+*  perl
+*  wget
 
 
-= Details =
-
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+==Usage==
