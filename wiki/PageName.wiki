@@ -4,9 +4,9 @@
 
 ==What do you need?==
 I have developed the scripts on Linux. However, any system should work if you have these tools:
-*  /bin/sh (Shell)
-*  perl
-*  wget
+  */bin/sh (Shell)
+  *perl
+  *wget
 
 
 ==Usage==
