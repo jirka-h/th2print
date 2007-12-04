@@ -4,9 +4,18 @@
 
 ==What do you need?==
 I have developed the scripts on Linux. However, any system should work if you have these tools:
-  */bin/sh (Shell)
-  *perl
-  *wget
+  * /bin/sh (Shell)
+  * perl
+  * wget
+
+==Installation==
+There are three scripts:
+  * th2print.sh
+    * This is the main program. It relies however on following two subprograms:
+  * make_one_html.pl
+    * It will merge all pages together and will also throw away any advertisement around the main text.
+  * html_create_toc.pl
+    * It will TOC of genereted page. This can be usefull when reading the 
 
 
 ==Usage==
