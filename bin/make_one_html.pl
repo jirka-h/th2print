@@ -23,6 +23,7 @@ sub count_div {
 $DIV_COUNT=0;
 $FIRST=1;       #true;
 $TITLE=0;
+$H2=0;
 
 while(<>) {
   if ($FIRST) { #First file in the list - we will look for title
@@ -38,11 +39,31 @@ while(<>) {
       if (m%</title>%) {
 	print $`,$&,"\n";
 	$TITLE=-1;
-	$FIRST=0; #false
+	###$FIRST=0; #false
       } else {
 	print;
       }
     }
+    if ($TITLE == -1) { #Title has been found - now we will look for h2
+      if ($H2 == 0) {
+	if (m/<h2/) {
+	  print $&;
+	  $_=$';
+	  $H2=1;
+	}
+      }
+
+      if ($H2 == 1) {
+	if (m%</h2>%) {
+	  print $`,$&,"\n";
+	  $H2=-1;
+	  $FIRST=0; #false
+	} else {
+	  print;
+	}
+      }
+    }
+
   }
 
   if ( $.==1) {
