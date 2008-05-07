@@ -5,6 +5,7 @@
 # SVN
 # BLLL
 
+BROWSER="firefox -no-remote -P Exp"
 # Colors {{{1
 function echo_red() {
 if [[ "$TERM" = linux || "$TERM" = xterm ]]
@@ -90,7 +91,7 @@ fi
 
 # }}}
 
-# Calling firefox {{{1
+# Calling HTML Browser {{{1
 TOC_NAME="${BASE_OUTPUT_NAME}_frame${BASE_OUTPUT_SUFFIX}"
 if [ ! -r $TOC_NAME ] 
 then
@@ -104,7 +105,7 @@ fi
 echo_red "Will try to open ${OPEN_NAME}"
 
 echo_red "Trying to call exec firefox `pwd`/${OPEN_NAME}"
-exec firefox `pwd`/${OPEN_NAME}
+exec ${BROWSER} `pwd`/${OPEN_NAME}
 # }}}
 
 # Some WGET Options descrition {{{1
