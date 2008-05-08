@@ -1,9 +1,10 @@
 #!/bin/sh
 # vim: set fdm=marker: VIM modeline
-# Usage 
-# go.sh http://www.tomshardware.com/2007/11/19/the_spider_weaves_its_web
-# SVN
-# BLLL
+# Usage: old (till 01/2008)
+# th2print.sh http://www.tomshardware.com/2007/11/19/the_spider_weaves_its_web
+# Usage: new
+# th2print.sh http://www.tomshardware.com/reviews/amd-phenom-athlon,1918.html
+
 
 BROWSER="firefox -no-remote -P Exp"
 # Colors {{{1
@@ -20,32 +21,51 @@ fi
 #}}}
 
 # WGET Options {{{1
-MAXIMUM_PAGES=60      #Maximum number of pages to download
+MAXIMUM_PAGES=3      #Maximum number of pages to download
 WGET_STANDARD=" -E -H -k -K -p --user-agent=Mozilla/5.0"
 WGET_EXPERIMENTAL=-"r -l1 --follow-tags=img"
 
 WGET_OPTIONS="$WGET_STANDARD $WGET_EXPERIMENTAL"
 
 #WGET_BASE_URL="http://www.tomshardware.com/2007/11/19/the_spider_weaves_its_web"
-WGET_BASE_URL=`echo $1 | perl -ne 's%/$%%g; print;'`
-echo_red "URL is $WGET_BASE_URL"
+#Format of pages on TH has been changed.
+#WGET_BASE_URL=`echo $1 | perl -ne 's%/$%%g; print;'`
+#echo_red "URL is $WGET_BASE_URL"
+WGET_BASE_URL=${1%/*}
+WGET_FULL_PAGE_NAME=${1##*/}
+SUFFIX=".html"
+WGET_PAGE_NAME_WITHOUT_SUFFIX=${WGET_FULL_PAGE_NAME%.html}
+
 #}}}
 
 # Download pages {{{1
-echo_red "wget $WGET_OPTIONS ${WGET_BASE_URL}/index.html"
+#echo_red "wget $WGET_OPTIONS ${WGET_BASE_URL}/index.html"
+COMMAND="wget "$WGET_OPTIONS" "${1}
+echo_red ${COMMAND}
 
-if ! wget $WGET_OPTIONS ${WGET_BASE_URL}/index.html
+#if ! wget $WGET_OPTIONS ${WGET_BASE_URL}/index.html
+if ! ${COMMAND}
 then
-  echo_red "Error calling wget $WGET_OPTIONS ${WGET_BASE_URL}/index.html"
+  echo_red "Error calling \""${COMMAND}"\""
 fi
 
 
-for ((a=1; a <= ${MAXIMUM_PAGES} ; a++)) 
-do 
-  echo_red "wget $WGET_OPTIONS ${WGET_BASE_URL}/page$a.html"
-  if ! wget $WGET_OPTIONS ${WGET_BASE_URL}/page$a.html
+#for ((a=1; a <= ${MAXIMUM_PAGES} ; a++))
+#do 
+#  echo_red "wget $WGET_OPTIONS ${WGET_BASE_URL}/page$a.html"
+#  if ! wget $WGET_OPTIONS ${WGET_BASE_URL}/page$a.html
+#  then
+#    echo_red "Error calling wget $WGET_OPTIONS ${WGET_BASE_URL}/page$a.html"
+#  fi
+#done
+
+for ((a=2; a <= ${MAXIMUM_PAGES} ; a++))
+do
+  COMMAND="wget "$WGET_OPTIONS" "${WGET_BASE_URL}/${WGET_PAGE_NAME_WITHOUT_SUFFIX}-${a}${SUFFIX}
+  echo_red ${COMMAND}
+  if ! ${COMMAND}
   then
-    echo_red "Error calling wget $WGET_OPTIONS ${WGET_BASE_URL}/page$a.html"
+    echo_red "Error calling \""${COMMAND}"\""
   fi
 done
 
@@ -64,8 +84,20 @@ BIN_DIR=`dirname $BIN_NAME`
 
 echo_red "Trying to cd $DIRNAME"
 cd $DIRNAME
-FILES=`ls page*html | sort -k 2 -n -t e`
-FILES="index.html $FILES"
+#FILES=`ls page*html | sort -k 2 -n -t e`
+#FILES="index.html $FILES"
+
+FILES=${WGET_FULL_PAGE_NAME}
+for ((a=1; a <= ${MAXIMUM_PAGES} ; a++))
+do
+  CANDIDATE=${WGET_PAGE_NAME_WITHOUT_SUFFIX}"-"${a}${SUFFIX}
+  if [ -f ${CANDIDATE} ]
+  then
+    FILES=${FILES}" "${CANDIDATE}
+  fi
+done
+
+
 echo_red $FILES
 
 echo_red "Trying to call ${BIN_DIR}/make_one_html.pl"
