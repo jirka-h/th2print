@@ -4,26 +4,33 @@
 use strict;
 my $FILE_NUMBER=0;
 my @list_of_elements;
+my @header=(["!DOCTYPE",1,0], ["html",1,0], ["head",1,0], ["body",1,0],["h4",1,1],["h3",1,1]);
 
 
-sub search_html_element_start ($$) { #returns 1 when element is found, 0 otherwise (html block like <title>text</title>)
+
+sub search_html_element_start ($$$) { #returns 1 when element is found, 0 otherwise (html block like <title>text</title>)
+				     # search_html_element_start title 1 1
+				     # search for title and print attributes and push element on @list_of_elements
   use vars qw(@list_of_elements);
   my $element= shift;         #html element like <title>
   my $with_attribute = shift; #parse attributes, like <head profile="http://www.w3.org/2005/11/profile"> ?
 			      #0 false, any other number true
+  my $add_to_list = shift;    #0 false, any other number true
+
   my $search;
   $search="<" . $element . "[^>]*>";
 
 
     if (m/$search/) {
-     print $&;   #Matching string
      if ( $with_attribute ) { 
 	print $&;   #Matching string
      } else {
 	print "<",$element,"\>";
      }
      $_=$';      #string following what was matched
-     push(@list_of_elements, $element);      #add to end of list
+     if ($add_to_list) {
+	push(@list_of_elements, $element);      #add to end of list
+     }
      return 1;                     #true - we have found an element
     } else {
      return 0;                     #false - element not found
@@ -64,28 +71,77 @@ sub search_html_element_stop () {
     $search = "</" . $element . ">";
 #    print STDERR $search,$_;
     if (m&$search&) {
-      print $`, $&;   #Matching string
+      print $`, $&, "\n";   #Before match, matching string
       $_=$';
       pop @list_of_elements;
     }
   }
-  if ( $#list_of_elements >= 0 ) {
+  if ( @list_of_elements > 0 ) {
     print;
+    $_="";
   }
 }
 
 
+#TODO - in head povoloit pouze meta,title,link
+while(<>) {#main loop
 
-while(<>) {
- if ( search_html_element_start_with_parameter("p","class=\"spip\"",1) ) {
-   print STDERR "main\t",@list_of_elements,"\t",$#list_of_elements+1,"\n";
- }
- if ( $#list_of_elements >= 0 ) {
-   search_html_element_stop;
- }
+  if ( $.==1) {
+    print STDERR "Processing file \"$ARGV\", still to process " , $#ARGV+1, " files.\n";
+    ++$FILE_NUMBER;
+  }
+
+while(length($_) > 0 ) {
+
+#print STDERR $., ":", length($_),"\n";
+
+  if ( @header > 0 ) {
+   if ( search_html_element_start($header[0][0], $header[0][1], $header[0][2]) ) {
+     if (! $header[0][2] ) { print "\n"; }
+     if ($header[0][0] =~ "head" && ! $header[0][2]) { print "</", $header[0][0], ">\n";}
+     shift @header;
+   } else {
+     if (@list_of_elements == 0) {$_="";}
+   }
+   if ( @list_of_elements > 0 ) {
+     search_html_element_stop;
+   }
+
+  } else {
+
+
+
+   if ( search_html_element_start_with_parameter("p","class=\"spip\"",1) ) {
+     ##print STDERR "main\t",@list_of_elements,"\t",$#list_of_elements+1,"\n";
+   } else {
+     if (@list_of_elements == 0) {$_="";}
+   }
+   if ( @list_of_elements > 0 ) {
+     search_html_element_stop;
+   }
+  }
 }
 
+  if (eof) {
 
+    if ( @header > 0 && $FILE_NUMBER == 1) {
+      print STDERR "Warning: there are ", scalar(@header), " not processed header elements at the end of file \"$ARGV\"\n";
+      print STDERR "These elements are:\"", @header, "\"\n";
+      @header=();
+    }
+
+    if ( @list_of_elements > 0 ) {
+      print STDERR "Warning: there are ", scalar(@list_of_elements), " not processed elements at the end of file \"$ARGV\"\n";
+      print STDERR "These elements are:\"", @list_of_elements, "\"\n";
+      @list_of_elements=();
+    }
+    @header=(["h3",1,1]);
+    close (ARGV); #needed only when line counting should work for each input file separately
+  }
+}
+
+print "</body>\n";
+print "</html>\n";
 
 
 
