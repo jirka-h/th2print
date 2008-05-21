@@ -1,10 +1,16 @@
 #!/usr/bin/perl -w
 #Usage toc.pl index.html
 
+use strict;
 use File::Basename;
 my @suffixes=(".html",".htm");
 my $name_main;
+my $name_frame;
+my $name_toc;
 my $toc;
+my $frame;
+my $main;
+my $counter=0;
 
 while(<>) {
 
@@ -12,17 +18,20 @@ while(<>) {
     print STDERR "Processing file $ARGV\n";
     my ($name_pur,$path,$suf) = fileparse($ARGV,@suffixes);
     
-    $name_main = $name_pur . $suf; 
-    my $name_frame = $name_pur . "_frame" . $suf;
-    my $name_toc =  $name_pur . "_toc" . $suf;
 
-    my $frame = $path . "/" . $name_frame;
+    $name_frame = $name_pur . "_frame" . $suf;
+    $name_toc =  $name_pur . "_toc" . $suf;
+    $name_main = $name_pur . "_main" . $suf;
+
+    $frame = $path . "/" . $name_frame;
     $toc = $path . "/" . $name_toc;
+    $main = $path . "/" . $name_main;
 
-    print STDERR "Output $frame, $toc\n";
+    print STDERR "Output $frame, $toc, $main \n";
     
     open (TOC_FH,">$toc") or die "Cannot open $toc\n";
     open (FRAME_FH,">$frame") or die "Cannot open $frame\n";
+    open (MAIN_FH,">$main") or die "Cannot open $main\n";
     
     print FRAME_FH << "FOO";
 <HTML>
@@ -51,9 +60,12 @@ FOO
 FOO1
   }
  
-  if (m/<a name="(.*)"/) {
-    print TOC_FH "<a href=\"$name_main#$1\">$1</a><br>\n";
+  if (m&<h3>\s*(.*?)\s*</h3>&) {
+    ++$counter;
+    print TOC_FH "<a href=\"$name_main#$counter\">$1</a><br>\n";
+    print MAIN_FH "<a name=$counter> </a>\n";
   }
+  print MAIN_FH;
 
 
   if (eof) {
