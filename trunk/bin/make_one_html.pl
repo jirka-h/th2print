@@ -1,10 +1,18 @@
 #!/usr/bin/perl -w
 # Usage make_one_html.pl amd-phenom-athlon,1918.html amd-phenom-athlon,1918-1.html > all.html
+# vim: set sw=2
+
 
 use strict;
 my $FILE_NUMBER=0;
 my @list_of_elements;
-my @header=(["!DOCTYPE",1,0], ["html",1,0], ["head",1,0], ["body",1,0],["h4",1,1],["h3",1,1]);
+my @header=(["!DOCTYPE",1,0], ["html",1,0], ["head",1,1], ["body",0,0],["h4",0,1],["h3",0,1]);
+#Coding: html element,print attributes?,add element to list_of_elements and search for </element>?
+#my $header_white_list="<meta.*?/>|<title.*?>.*</title>|<link.*?/>|</head>";
+#my $header_white_list="<meta.*?/>|<title.*?>.*</title>|</head>";
+my $header_white_list="<meta.*?/>|<title.*?>.*</title>|<link.*?icon.*?/>|</head>";
+#Which elements are allowed inside <head>...</head>?
+#@header has to contain ["head",1,1] (important is last 1)
 
 
 
@@ -82,6 +90,22 @@ sub search_html_element_stop () {
   }
 }
 
+sub handle_head () {
+#if last element in @list_of_elements is "head" we will search for $header_white_list
+  use vars qw(@list_of_elements $header_white_list);
+  
+  if ( $list_of_elements[-1] =~ "head" ) {
+    if (m/$header_white_list/) {
+      print $&,"\n";   #Matching string
+      $_=$';      #string following what was matched
+      if ($& =~ "</head>") {
+        pop @list_of_elements;
+      }
+    } else {
+      $_="";
+    }
+  }
+}
 
 #TODO - in head povoloit pouze meta,title,link
 while(<>) {#main loop
@@ -91,36 +115,45 @@ while(<>) {#main loop
     ++$FILE_NUMBER;
   }
 
-while(length($_) > 0 ) {
+  while(length($_) > 0 ) {
+  
+    ##print STDERR $., ":", length($_),":\"",$_,"\"\n";
 
-#print STDERR $., ":", length($_),"\n";
-
-  if ( @header > 0 ) {
-   if ( search_html_element_start($header[0][0], $header[0][1], $header[0][2]) ) {
-     if (! $header[0][2] ) { print "\n"; }
-     if ($header[0][0] =~ "head" && ! $header[0][2]) { print "</", $header[0][0], ">\n";}
-     shift @header;
-   } else {
-     if (@list_of_elements == 0) {$_="";}
-   }
-   if ( @list_of_elements > 0 ) {
-     search_html_element_stop;
-   }
-
-  } else {
-
-
-
-   if ( search_html_element_start_with_parameter("p","class=\"spip\"",1) ) {
-     ##print STDERR "main\t",@list_of_elements,"\t",$#list_of_elements+1,"\n";
-   } else {
-     if (@list_of_elements == 0) {$_="";}
-   }
-   if ( @list_of_elements > 0 ) {
-     search_html_element_stop;
-   }
+    if ( @list_of_elements > 0 ) {
+      if ($list_of_elements[-1] =~ "head" ) {
+        handle_head ();
+        next;
+      }
+    }
+  
+    if ( @header > 0 ) {
+      if ( search_html_element_start($header[0][0], $header[0][1], $header[0][2]) ) {
+        if (! $header[0][2] ) { print "\n"; }
+        if ($header[0][0] =~ "head") {
+          if ($header[0][2]) { 
+            handle_head ();
+          } else {
+            print "</", $header[0][0], ">\n";
+          }
+        }
+        shift @header;
+      } else { 
+        if (@list_of_elements == 0) {$_="";}
+      }
+      if ( @list_of_elements > 0 ) {
+        search_html_element_stop;
+      }
+    } else {
+      if ( search_html_element_start_with_parameter("p","class=\"spip\"",0) ) {
+        ##print STDERR "main\t",@list_of_elements,"\t",$#list_of_elements+1,"\n";
+      } else {
+        if (@list_of_elements == 0) {$_="";}
+      }
+      if ( @list_of_elements > 0 ) {
+        search_html_element_stop;
+      }
+    }
   }
-}
 
   if (eof) {
 
